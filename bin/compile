@@ -20,7 +20,7 @@ XSP_VERSION="2.10.2"
 # s3 packages
 #MONO_PACKAGE="https://s3.amazonaws.com/heroku-buildpack-mono/mono-${MONO_VERSION}.tgz"
 MONO_PACKAGE="http://bh-buildpack-mono.s3.amazonaws.com/mono-2.10.8.tar.gz"
-XSP_PACKAGE="https://s3.amazonaws.com/heroku-buildpack-mono/xsp-${XSP_VERSION}.tgz"
+XSP_PACKAGE="http://download.mono-project.com/sources/xsp/xsp-2.10.2.tar.bz2"
 
 # important directories: https://gist.github.com/fe7f04abbd9538b656c5
 BUILD_DIR=$1
@@ -38,23 +38,17 @@ echo "-----> Bundling Mono v${MONO_VERSION}"
   curl ${MONO_PACKAGE} --silent --max-time 600 -o - | tar xzf - -C ${CACHE_DIR}/mono
 #fi
 cp -r "${CACHE_DIR}/mono" .
-#cp -r "${CACHE_DIR}/bin" ./mono/
-#cp -r "${CACHE_DIR}/etc" ./mono/
-#cp -r "${CACHE_DIR}/lib" ./mono/
-#cp -r "${CACHE_DIR}/share" ./mono/
-#cp -r "${CACHE_DIR}/include" ./mono/
+
+ln -s "${CACHE_DIR}/mono" /app
+
+echo "Fetching XSP v${XSP_VERSION} @ ${XSP_PACKAGE}" | indent
+curl ${XSP_PACKAGE} --silent --max-time 600 -o - | tar xzf - -C ${CACHE_DIR}
+cd ${CACHE_DIR}/xsp
+./configure --prefix=/app/mono --with-runtime=/app/mono
+make
+make install
 
 
-
-echo "-----> Bundling XSP v${XSP_VERSION}"
-if [ ! -d "${CACHE_DIR}/xsp" ]; then
-  echo "Fetching XSP v${XSP_VERSION} @ ${XSP_PACKAGE}" | indent
-  curl ${XSP_PACKAGE} --silent --max-time 600 -o - | tar xzf - -C ${CACHE_DIR}
-
-  echo "Copying libraries to the GAC" | indent
-  cp -r ${CACHE_DIR}/xsp/lib/mono/gac/* ${CACHE_DIR}/mono/lib/mono/gac/
-fi
-cp -r "${CACHE_DIR}/xsp" .
 
 # find a solution file
 SLN=$(find . -maxdepth 1 -iname "*.sln")
@@ -68,12 +62,8 @@ if [ "${SLN}" != "" ]; then
   echo "-----> Compiling Mono application"
 
   # need Mono in its expected location for xbuild to work
-  ln -s "${CACHE_DIR}/mono" /app
-  #ln -s "${CACHE_DIR}/bin" /app/mono
-  #ln -s "${CACHE_DIR}/etc" /app/mono
-  #ln -s "${CACHE_DIR}/include" /mono
-  #ln -s "${CACHE_DIR}/share" /app/mono
-  #ln -s "${CACHE_DIR}/lib" /app/mono
+  #ln -s "${CACHE_DIR}/mono" /app
+
   
   ls /app/mono
   
