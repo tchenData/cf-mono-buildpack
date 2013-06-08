@@ -11,7 +11,7 @@ WEB_ROOT="."
 cat <<EOF
 ---
 config_vars:
-  PATH: /app/mono/bin:/app/xsp/bin:/usr/local/bin:/usr/bin:/bin
+  PATH: /app/mono/bin:\$PATH
 default_process_types:
   web: /app/mono/bin/xsp --nonstop --port \$VCAP_APP_PORT 
 EOF
