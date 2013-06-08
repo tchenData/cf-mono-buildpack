@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+# bin/compile <build-dir> <cache-dir>
+
+# fail fast
+set -e
+
+# if any command in a pipe fails, kill the script (useful for indent)
+set -o pipefail
+
+indent() {
+  while read line; do
+    echo "       ${line}"
+  done
+}
+
+# config
+MONO_VERSION="2.10.8"
+XSP_VERSION="2.10.2"
+
+# s3 packages
+#MONO_PACKAGE="https://s3.amazonaws.com/heroku-buildpack-mono/mono-${MONO_VERSION}.tgz"
+MONO_PACKAGE="http://bh-buildpack-mono.s3.amazonaws.com/mono-2.10.8.tar.gz"
+XSP_PACKAGE="https://s3.amazonaws.com/heroku-buildpack-mono/xsp-${XSP_VERSION}.tgz"
+
+# important directories: https://gist.github.com/fe7f04abbd9538b656c5
+BUILD_DIR=$1
+CACHE_DIR=$2
+
+# NOTE: the rest of this script assumes that we're in the build directory
+cd ${BUILD_DIR}
+
+# cache may not exist yet
+mkdir -p ${CACHE_DIR}/mono/lib/mono/gac/
+echo ${CACHE_DIR}
+echo "-----> Bundling Mono v${MONO_VERSION}"
+#if [ ! -d "${CACHE_DIR}/mono" ]; then
+  echo "Fetching Mono v${MONO_VERSION} @ ${MONO_PACKAGE}" | indent
+  curl ${MONO_PACKAGE} --silent --max-time 600 -o - | tar xzf - -C ${CACHE_DIR}/mono
+#fi
+cp -r "${CACHE_DIR}/mono" .
+#cp -r "${CACHE_DIR}/bin" ./mono/
+#cp -r "${CACHE_DIR}/etc" ./mono/
+#cp -r "${CACHE_DIR}/lib" ./mono/
+#cp -r "${CACHE_DIR}/share" ./mono/
+#cp -r "${CACHE_DIR}/include" ./mono/
+
+
+
+echo "-----> Bundling XSP v${XSP_VERSION}"
+if [ ! -d "${CACHE_DIR}/xsp" ]; then
+  echo "Fetching XSP v${XSP_VERSION} @ ${XSP_PACKAGE}" | indent
+  curl ${XSP_PACKAGE} --silent --max-time 600 -o - | tar xzf - -C ${CACHE_DIR}
+
+  echo "Copying libraries to the GAC" | indent
+  cp -r ${CACHE_DIR}/xsp/lib/mono/gac/* ${CACHE_DIR}/mono/lib/mono/gac/
+fi
+cp -r "${CACHE_DIR}/xsp" .
+
+# find a solution file
+SLN=$(find . -maxdepth 1 -iname "*.sln")
+if [ $( echo "${SLN}" | wc -l ) -gt 1 ]; then
+  echo "-----> Too many *.sln files"
+  exit 1
+fi
+
+# compile an uploaded application
+if [ "${SLN}" != "" ]; then
+  echo "-----> Compiling Mono application"
+
+  # need Mono in its expected location for xbuild to work
+  ln -s "${CACHE_DIR}/mono" /app
+  #ln -s "${CACHE_DIR}/bin" /app/mono
+  #ln -s "${CACHE_DIR}/etc" /app/mono
+  #ln -s "${CACHE_DIR}/include" /mono
+  #ln -s "${CACHE_DIR}/share" /app/mono
+  #ln -s "${CACHE_DIR}/lib" /app/mono
+  
+  ls /app/mono
+  
+  export PATH="/app/mono/bin:${PATH}"
+
+  #${CACHE_DIR}/bin/xbuild /property:Configuration=Release ${SLN} | indent
+  xbuild  ${SLN} | indent
+fi
+
+echo "-----> Build SUCCESS"
