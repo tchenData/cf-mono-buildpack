@@ -42,8 +42,8 @@ cp -r "${CACHE_DIR}/mono" .
 ln -s "${CACHE_DIR}/mono" /app
 
 echo "Fetching XSP v${XSP_VERSION} @ ${XSP_PACKAGE}" | indent
-curl ${XSP_PACKAGE} --silent --max-time 600 -o - | tar xzf - -C ${CACHE_DIR}
-cd ${CACHE_DIR}/xsp
+curl ${XSP_PACKAGE} --silent --max-time 600 -o - | tar xvf - -C ${CACHE_DIR}
+cd ${CACHE_DIR}/xsp-2.10.2
 ./configure --prefix=/app/mono --with-runtime=/app/mono
 make
 make install
