@@ -72,7 +72,7 @@ if [ "${SLN}" != "" ]; then
   export PATH="/app/mono/bin:${PATH}"
 
   #${CACHE_DIR}/bin/xbuild /property:Configuration=Release ${SLN} | indent
-  xbuild  ${SLN} | indent
+  #xbuild  ${SLN} | indent
 fi
 
 echo "-----> Build SUCCESS"
