@@ -44,6 +44,7 @@ ln -s "${CACHE_DIR}/mono" /app
 echo "Fetching XSP v${XSP_VERSION} @ ${XSP_PACKAGE}" | indent
 curl ${XSP_PACKAGE} --silent --max-time 600 -o - | tar jxvf - -C ${CACHE_DIR}
 cd ${CACHE_DIR}/xsp-2.10.2
+export PKG_CONFIG_PATH=/app/mono/lib/pkgconfig
 ./configure --prefix=/app/mono --with-runtime=/app/mono
 make
 make install
