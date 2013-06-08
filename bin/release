@@ -13,5 +13,5 @@ cat <<EOF
 config_vars:
   PATH: /app/mono/bin:/app/xsp/bin:/usr/local/bin:/usr/bin:/bin
 default_process_types:
-  web: /app/mono/xsp/bin/xsp --nonstop --port \$VCAP_APP_PORT 
+  web: /app/mono/bin/xsp --nonstop --port \$VCAP_APP_PORT 
 EOF
