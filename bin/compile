@@ -19,8 +19,8 @@ XSP_VERSION="2.10.2"
 
 # s3 packages
 #MONO_PACKAGE="https://s3.amazonaws.com/heroku-buildpack-mono/mono-${MONO_VERSION}.tgz"
-MONO_PACKAGE="http://bh-buildpack-mono.s3.amazonaws.com/mono-2.10.8.tar.gz"
-XSP_PACKAGE="http://download.mono-project.com/sources/xsp/xsp-2.10.2.tar.bz2"
+MONO_PACKAGE="http://192.168.2.103:8001/buildpack/mono/mono-2.10.8.tar.gz"
+XSP_PACKAGE="http://192.168.2.103:8001/buildpack/mono/xsp/xsp-2.10.2.tar.bz2"
 
 # important directories: https://gist.github.com/fe7f04abbd9538b656c5
 BUILD_DIR=$1
